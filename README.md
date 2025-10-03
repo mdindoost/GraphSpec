@@ -221,17 +221,18 @@ python experiments/compare_eigenspace_strategies.py --dataset Cora --epochs 300
 Tests 7 different scaling strategies for eigenspace transformation:
 
 1. ``inverse_eigenvalue`` - Weight by 1/(λ+0.1) ← WINNER
-2. direct_weighting - Apply inverse weights to features
-3. match_input_std - Scale to match input std
-4. sqrt_n - Scale by √N
-5. sqrt_eigenvalue - Weight by √λ
-6. standardize - StandardScaler after projection
-7. no_scaling - No scaling (baseline, performs poorly)
+2. ``direct_weighting`` - Apply inverse weights to features
+3. ``match_input_std`` - Scale to match input std
+4. ``sqrt_n`` - Scale by √N
+5. ``sqrt_eigenvalue`` - Weight by √λ
+6. ``standardize`` - StandardScaler after projection
+7. ``no_scaling`` - No scaling (baseline, performs poorly)
 
 
 
-Output: results/metrics/eigenspace_strategies_Cora.json
-Expected Results:
+**Output:** ``results/metrics/eigenspace_strategies_Cora.json``
+
+**Expected Results:**
 Rank   Strategy                  Accuracy     vs Raw
 ──────────────────────────────────────────────────────
 1      inverse_eigenvalue          75.2%      +8.4% 🏆
