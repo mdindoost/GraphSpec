@@ -175,33 +175,48 @@ python experiments/run_baseline.py --dataset Cora --runs 3 --epochs 300
 ```
 
 **What it does:**
-- ✓ Compares 4 methods: Raw MLP, Random MLP, Eigenspace MLP, GCN
-- ✓ Uses train+val (640 samples) for training on public split
-- ✓ High dropout (0.8) for regularization on small data
-- ✓ Eigenspace uses inverse_eigenvalue strategy (the winning approach)
+- Compares 4 methods: Raw MLP, Random MLP, Eigenspace MLP, GCN
+- Uses train+val (640 samples) for training on public split
+- High dropout (0.8) for regularization on small data
+- Eigenspace uses inverse_eigenvalue strategy (the winning approach)
 
 **Parameters:**
---dataset: Cora, CiteSeer, or PubMed
---hidden_dim: Hidden layer size (default: 64)
---epochs: Training epochs (default: 500)
---runs: Number of runs for averaging (default: 10)
---device: cpu or cuda
+```bash
+--dataset     : Cora, CiteSeer, or PubMed
+--hidden_dim  : Hidden layer size (default: 64)
+--epochs      : Training epochs (default: 500)
+--runs        : Number of runs for averaging (default: 10)
+--device      : cpu or cuda
+```
 
-Output: results/metrics/baseline_final_Cora.json
-Expected Results (Cora):
-raw_mlp:        68.2% ± 0.5%
-random_mlp:     61.1% ± 0.8%
-eigenspace_mlp: 75.5% ± 1.0%  ← +14.4% over random!
-gcn:            86.2% ± 0.3%
+# Output
 
-Experiment 2: Strategy Comparison ⭐ (Must Do - Ablation)
-Purpose: Justify why inverse_eigenvalue strategy is best
-bash# Test all 7 eigenspace strategies (~30 minutes)
+```bash
+results/metrics/baseline_final_Cora.json
+```
+
+# Expected Results (Cora)
+
+```bash
+raw_mlp        : 68.2% ± 0.5%
+random_mlp     : 61.1% ± 0.8%
+eigenspace_mlp : 75.5% ± 1.0%  ← +14.4% over random!
+gcn            : 86.2% ± 0.3%
+```
+
+### Experiment 2: Strategy Comparison ⭐ (Must Do - Ablation)
+
+**Purpose:** Justify why inverse_eigenvalue strategy is best
+
+```bash
+# Test all 7 eigenspace strategies (~30 minutes)
 python experiments/compare_eigenspace_strategies.py --dataset Cora --epochs 500
 
 # Quick test
 python experiments/compare_eigenspace_strategies.py --dataset Cora --epochs 300
-What it does:
+```
+
+**What it does:**
 
 Tests 7 different scaling strategies for eigenspace transformation:
 
