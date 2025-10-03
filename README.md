@@ -279,15 +279,17 @@ K        K/D     Random    Eigenspace    Improvement
 
 ---
 
-Experiment 4: Multi-Dataset (Should Do - Generalization)
-Purpose: Show method generalizes across datasets
-bash# Run on all 3 datasets (~60 minutes)
+### Experiment 4: Multi-Dataset (Should Do - Generalization)
+**Purpose:** Show method generalizes across datasets
+```bash
+# Run on all 3 datasets (~60 minutes)
 python experiments/run_all_datasets.py --datasets Cora CiteSeer PubMed --runs 5
 
 ---
 
 # Quick test
 python experiments/run_all_datasets.py --datasets Cora CiteSeer --runs 3
+```
 What it does:
 
 Runs baseline experiment on multiple datasets
