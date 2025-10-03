@@ -233,14 +233,16 @@ Tests 7 different scaling strategies for eigenspace transformation:
 **Output:** ``results/metrics/eigenspace_strategies_Cora.json``
 
 **Expected Results:**
+```
 Rank   Strategy                  Accuracy     vs Raw
 ──────────────────────────────────────────────────────
 1      inverse_eigenvalue          75.2%      +8.4% 🏆
 2      direct_weighting            69.7%      +1.9% ➖
 3      raw_baseline                68.3%   baseline 📊
 4      match_input_std             38.3%     -30.0% ❌
-...
-Key Insight: Only inverse eigenvalue weighting significantly improves performance, validating the theoretical motivation (emphasizing smooth graph signals).
+
+```
+**Key Insight:** Only inverse eigenvalue weighting significantly improves performance, validating the theoretical motivation (emphasizing smooth graph signals).
 
 Experiment 3: Dimensionality Study (Should Do)
 Purpose: Show K=D is optimal, explore compression
