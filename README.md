@@ -335,8 +335,10 @@ graphsage          85.9%         -10.4%   2.78s
 ```
 **Finding:** Gap is consistent (~10-12%) across all GNN types, and Eigenspace+MLP is faster.
 
-📈 Generating Visualizations
-bash# After running experiments, generate all plots
+### 📈 Generating Visualizations
+
+```bash
+# After running experiments, generate all plots
 python scripts/generate_plots.py
 
 # Outputs to results/plots/:
@@ -344,15 +346,18 @@ python scripts/generate_plots.py
 # - dimensionality_Cora.png        # K vs accuracy curves
 # - gnn_comparison_Cora.png        # Multi-GNN comparison
 # - eigenvalue_spectrum.png        # Eigenvalue distribution
+```
 
 🧠 How It Works
-Mathematical Foundation
-Input:
+**Mathematical Foundation**
 
-Feature matrix: X ∈ ℝ^(N×D)
-Normalized Laplacian: L ∈ ℝ^(N×N)
+**Input:**
 
-Eigenspace Transformation Algorithm:
+- Feature matrix: X ∈ ℝ^(N×D)
+- Normalized Laplacian: L ∈ ℝ^(N×N)
+
+**Eigenspace Transformation Algorithm:**
+```
 1. Normalize features: X_norm = StandardScaler(X)
 
 2. QR decomposition: X_norm = QR
@@ -374,15 +379,17 @@ Eigenspace Transformation Algorithm:
    → Match input magnitude
 
 Output: X_new ∈ ℝ^(N×D) ready for MLP
-Intuition
-Why Inverse Eigenvalue Weighting Works:
-The eigenvalues of the projected Laplacian tell us about graph smoothness:
+```
 
-Low λ (0.08-0.5): Eigenvectors vary smoothly on the graph
+**Intuition**
+**Why Inverse Eigenvalue Weighting Works:**
+The eigenvalues of the projected Laplacian tell us about **graph smoothness:**
 
-Neighboring nodes have similar values
-Captures graph structure/communities
-We want to emphasize these!
+- **Low λ (0.08-0.5):** Eigenvectors vary smoothly on the graph
+
+  - Neighboring nodes have similar values
+  - Captures graph structure/communities
+  - **We want to emphasize these!**
 
 
 High λ (1.5-1.8): Eigenvectors vary sharply on the graph
