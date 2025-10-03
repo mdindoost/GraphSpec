@@ -8,7 +8,13 @@ This uses:
 """
 
 import sys
-sys.path.append('..')
+import os
+from pathlib import Path
+
+# Get project root and change working directory
+project_root = Path(__file__).parent.parent
+os.chdir(project_root)
+sys.path.append('.')
 
 import torch
 import numpy as np
@@ -22,7 +28,6 @@ from src.models.gcn import GCN
 import torch.nn.functional as F
 import argparse
 import json
-from pathlib import Path
 import time
 
 
@@ -42,7 +47,7 @@ def run_baseline_experiment(dataset_name='Cora', hidden_dim=64, epochs=500,
     print(f"{'='*80}\n")
     
     # Load dataset with public split
-    dataset = Planetoid(root='../data/raw', name=dataset_name, split='public')
+    dataset = Planetoid(root='data/raw', name=dataset_name, split='public')
     data = dataset[0]
     
     # Use train+val for training
@@ -178,7 +183,7 @@ def run_baseline_experiment(dataset_name='Cora', hidden_dim=64, epochs=500,
     print(f"3. Speed: Eigenspace is ~{summary['gcn']['time_mean']/summary['eigenspace_mlp']['time_mean']:.1f}x faster than GCN")
     
     # Save results
-    output_dir = Path('../results/metrics')
+    output_dir = Path('results/metrics')
     output_dir.mkdir(parents=True, exist_ok=True)
     output_file = output_dir / f'baseline_final_{dataset_name}.json'
     

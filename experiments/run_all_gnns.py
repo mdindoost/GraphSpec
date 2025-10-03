@@ -4,7 +4,13 @@ GNN comparison: Test multiple GNN architectures
 """
 
 import sys
-sys.path.append('..')
+import os
+from pathlib import Path
+
+# Get project root and change working directory
+project_root = Path(__file__).parent.parent
+os.chdir(project_root)
+sys.path.append('.')
 
 import torch
 import numpy as np
@@ -14,7 +20,6 @@ from src.data.graph_utils import compute_normalized_laplacian
 from src.training.trainer import Trainer
 import argparse
 import json
-from pathlib import Path
 
 
 def run_gnn_comparison(dataset_name='Cora', hidden_dim=64, epochs=200,
@@ -28,7 +33,7 @@ def run_gnn_comparison(dataset_name='Cora', hidden_dim=64, epochs=200,
     print(f"{'='*80}\n")
     
     # Load dataset
-    dataset = Planetoid(root='../data/raw', name=dataset_name)
+    dataset = Planetoid(root='data/raw', name=dataset_name)
     data = dataset[0]
     
     # Prepare eigenspace transformation
@@ -110,7 +115,7 @@ def run_gnn_comparison(dataset_name='Cora', hidden_dim=64, epochs=200,
         }
     
     # Save results
-    output_dir = Path('../results/metrics')
+    output_dir = Path('results/metrics')
     output_dir.mkdir(parents=True, exist_ok=True)
     output_file = output_dir / f'gnn_comparison_{dataset_name}.json'
     

@@ -4,12 +4,17 @@ Multi-dataset experiment: Run baseline on multiple datasets
 """
 
 import sys
-sys.path.append('..')
+import os
+from pathlib import Path
 
-from run_baseline import run_baseline_experiment
+# Get project root and change working directory
+project_root = Path(__file__).parent.parent
+os.chdir(project_root)
+sys.path.append('.')
+
+from experiments.run_baseline import run_baseline_experiment
 import argparse
 import json
-from pathlib import Path
 
 
 def run_all_datasets(datasets=None, hidden_dim=64, epochs=200, 
@@ -37,7 +42,7 @@ def run_all_datasets(datasets=None, hidden_dim=64, epochs=200,
         all_results[dataset] = results
     
     # Save combined results
-    output_dir = Path('../results/metrics')
+    output_dir = Path('results/metrics')
     output_file = output_dir / 'all_datasets_summary.json'
     
     with open(output_file, 'w') as f:

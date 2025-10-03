@@ -6,7 +6,13 @@ their performance on node classification.
 """
 
 import sys
-sys.path.append('..')
+import os
+from pathlib import Path
+
+# Get project root and change working directory
+project_root = Path(__file__).parent.parent
+os.chdir(project_root)
+sys.path.append('.')
 
 import torch
 import numpy as np
@@ -17,7 +23,6 @@ from src.data.graph_utils import compute_normalized_laplacian
 from src.training.trainer import Trainer
 import argparse
 import json
-from pathlib import Path
 
 
 def compare_strategies(dataset_name='Cora', hidden_dim=64, epochs=500, device='cpu'):
@@ -35,7 +40,7 @@ def compare_strategies(dataset_name='Cora', hidden_dim=64, epochs=500, device='c
     print("="*70)
     
     # Load dataset
-    dataset = Planetoid(root='../data/raw', name=dataset_name, split='public')
+    dataset = Planetoid(root='data/raw', name=dataset_name, split='public')
     data = dataset[0]
     
     # Use train+val for training (standard for public split)
@@ -163,7 +168,7 @@ def compare_strategies(dataset_name='Cora', hidden_dim=64, epochs=500, device='c
         print(f"{rank:<6} {strategy:<25} {acc:>10.4f} {imp:>+11.1f}% {symbol}")
     
     # Save results
-    output_dir = Path('../results/metrics')
+    output_dir = Path('results/metrics')
     output_dir.mkdir(parents=True, exist_ok=True)
     output_file = output_dir / f'eigenspace_strategies_{dataset_name}.json'
     
