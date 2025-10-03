@@ -203,6 +203,7 @@ random_mlp     : 61.1% ± 0.8%
 eigenspace_mlp : 75.5% ± 1.0%  ← +14.4% over random!
 gcn            : 86.2% ± 0.3%
 ```
+---
 
 ### Experiment 2: Strategy Comparison ⭐ (Must Do - Ablation)
 
@@ -244,6 +245,8 @@ Rank   Strategy                  Accuracy     vs Raw
 ```
 **Key Insight:** Only inverse eigenvalue weighting significantly improves performance, validating the theoretical motivation (emphasizing smooth graph signals).
 
+---
+
 ### Experiment 3: Dimensionality Study (Should Do)
 **Purpose:** Show ``K=D`` is optimal, explore compression
 ```bash
@@ -280,6 +283,8 @@ Experiment 4: Multi-Dataset (Should Do - Generalization)
 Purpose: Show method generalizes across datasets
 bash# Run on all 3 datasets (~60 minutes)
 python experiments/run_all_datasets.py --datasets Cora CiteSeer PubMed --runs 5
+
+---
 
 # Quick test
 python experiments/run_all_datasets.py --datasets Cora CiteSeer --runs 3
