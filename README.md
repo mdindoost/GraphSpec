@@ -273,6 +273,7 @@ K        K/D     Random    Eigenspace    Improvement
 ```
 
 **Finding:** ``K=D`` provides best accuracy-efficiency trade-off. Compression hurts slightly, expansion doesn't help much.
+---
 
 Experiment 4: Multi-Dataset (Should Do - Generalization)
 Purpose: Show method generalizes across datasets
