@@ -189,13 +189,13 @@ python experiments/run_baseline.py --dataset Cora --runs 3 --epochs 300
 --device      : cpu or cuda
 ```
 
-# Output
+**Output**
 
 ```bash
 results/metrics/baseline_final_Cora.json
 ```
 
-# Expected Results (Cora)
+**Expected Results (Cora)**
 
 ```bash
 raw_mlp        : 68.2% ± 0.5%
@@ -220,13 +220,13 @@ python experiments/compare_eigenspace_strategies.py --dataset Cora --epochs 300
 
 Tests 7 different scaling strategies for eigenspace transformation:
 
-inverse_eigenvalue - Weight by 1/(λ+0.1) ← WINNER
-direct_weighting - Apply inverse weights to features
-match_input_std - Scale to match input std
-sqrt_n - Scale by √N
-sqrt_eigenvalue - Weight by √λ
-standardize - StandardScaler after projection
-no_scaling - No scaling (baseline, performs poorly)
+1. inverse_eigenvalue - Weight by 1/(λ+0.1) ← WINNER
+2. direct_weighting - Apply inverse weights to features
+3. match_input_std - Scale to match input std
+4. sqrt_n - Scale by √N
+5. sqrt_eigenvalue - Weight by √λ
+6. standardize - StandardScaler after projection
+7. no_scaling - No scaling (baseline, performs poorly)
 
 
 
