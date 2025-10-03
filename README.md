@@ -285,45 +285,55 @@ K        K/D     Random    Eigenspace    Improvement
 # Run on all 3 datasets (~60 minutes)
 python experiments/run_all_datasets.py --datasets Cora CiteSeer PubMed --runs 5
 
----
-
 # Quick test
 python experiments/run_all_datasets.py --datasets Cora CiteSeer --runs 3
 ```
-What it does:
+**What it does:**
 
-Runs baseline experiment on multiple datasets
-Shows consistent improvement across different graphs
-Tests on different sizes and homophily levels
+- Runs baseline experiment on multiple datasets
+- Shows consistent improvement across different graphs
+- Tests on different sizes and homophily levels
 
-Output: results/metrics/all_datasets_summary.json
-Expected Results:
+**Output:** ``results/metrics/all_datasets_summary.json``
+
+**Expected Results:**
+```
 Dataset    Eigenspace    Random    Improvement    Homophily
 ────────────────────────────────────────────────────────────
 Cora       75.5%         61.1%     +14.4%        81%
 CiteSeer   71.2%         65.4%     +5.8%         73%
 PubMed     78.9%         76.2%     +2.7%         80%
-Finding: Improvement correlates with graph homophily - method works best when neighbors are similar.
+```
 
-Experiment 5: GNN Comparison (Nice to Have)
-Purpose: Show gap to GNN is consistent across architectures
-bash# Compare against GCN, GAT, GraphSAGE (~40 minutes)
+**Finding:** Improvement correlates with graph homophily - method works best when neighbors are similar.
+
+---
+
+### Experiment 5: GNN Comparison (Nice to Have)
+**Purpose:** Show gap to GNN is consistent across architectures
+
+```bash
+# Compare against GCN, GAT, GraphSAGE (~40 minutes)
 python experiments/run_all_gnns.py --dataset Cora --runs 5
-What it does:
+```
+**What it does:**
 
-Compares Eigenspace+MLP against 3 GNN architectures
-Shows consistent ~10-12% gap regardless of GNN type
-Validates that the gap is not specific to GCN
+- Compares Eigenspace+MLP against 3 GNN architectures
+- Shows consistent ~10-12% gap regardless of GNN type
+- Validates that the gap is not specific to GCN
 
-Output: results/metrics/gnn_comparison_Cora.json
-Expected Results:
+**Output:** ``results/metrics/gnn_comparison_Cora.json``
+
+**Expected Results:**
+```
 Model              Accuracy      Gap       Speed
 ─────────────────────────────────────────────────
 eigenspace_mlp     75.5%         -        1.93s
 gcn                86.2%         -10.7%   2.01s
 gat                87.1%         -11.6%   3.45s
 graphsage          85.9%         -10.4%   2.78s
-Finding: Gap is consistent (~10-12%) across all GNN types, and Eigenspace+MLP is faster.
+```
+**Finding:** Gap is consistent (~10-12%) across all GNN types, and Eigenspace+MLP is faster.
 
 📈 Generating Visualizations
 bash# After running experiments, generate all plots
