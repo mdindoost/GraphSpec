@@ -438,20 +438,22 @@ Flow: Input (1433) → [Linear] → [ReLU] → [Dropout 0.8] → [Linear] → [L
 | GCN            | 2-layer conv        | 86.25%      | 0.28%   | 2.01s          | 0.03s         |
 
 ```
-Statistical Significance: t-test shows p < 0.001 for eigenspace vs random
-Key Metrics:
+**Statistical Significance:** t-test shows p < 0.001 for eigenspace vs random
 
-Improvement over random: +14.46%
-% of GCN performance: 87.59%
-Speed vs GCN: ~1.0x (comparable)
-Parameters: ~100K (MLP) vs ~150K (GCN)
+**Key Metrics:*
+
+- **Improvement over random:** +14.46%
+- **% of GCN performance:**    87.59%
+- **Speed vs GCN:**            ~1.0x (comparable)
+- **Parameters:**              ~100K (MLP) vs ~150K (GCN)
 
 
-💡 Key Insights
-What We Learned
+### 💡 Key Insights
 
-Graph structure matters: +14% improvement over random shows spectral information is valuable
-Inverse weighting is crucial: Other scaling strategies (match_std, sqrt_n) fail catastrophically
+#### What We Learned
+
+1. **Graph structure matters:** +14% improvement over random shows spectral information is valuable
+2. **Inverse weighting is crucial:** Other scaling strategies (match_std, sqrt_n) fail catastrophically
 Simple is powerful: A 2-layer MLP with proper features reaches 88% of GCN performance
 Homophily drives success: Method works best on high-homophily graphs (Cora: 81%)
 No dimensionality reduction: K=D is optimal, compression hurts performance
