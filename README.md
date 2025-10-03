@@ -244,28 +244,35 @@ Rank   Strategy                  Accuracy     vs Raw
 ```
 **Key Insight:** Only inverse eigenvalue weighting significantly improves performance, validating the theoretical motivation (emphasizing smooth graph signals).
 
-Experiment 3: Dimensionality Study (Should Do)
-Purpose: Show K=D is optimal, explore compression
-bash# Test different dimensions (~30 minutes)
+### Experiment 3: Dimensionality Study (Should Do)
+**Purpose:** Show ``K=D`` is optimal, explore compression
+```bash
+
+# Test different dimensions (~30 minutes)
 python experiments/run_dimensionality.py --dataset Cora --runs 5
 
 # Custom dimensions
 python experiments/run_dimensionality.py --dims 128 256 512 1024 2048 --runs 5
-What it does:
+```
+**What it does:**
 
-Tests K = D/4, D/2, D, 2D, 4D for both Random and Eigenspace
-Shows if you can compress features without losing performance
-Compares improvement at each dimension
+- Tests ``K = D/4, D/2, D, 2D, 4D`` for both Random and Eigenspace
+- Shows if you can compress features without losing performance
+- Compares improvement at each dimension
 
-Output: results/metrics/dimensionality_Cora.json
-Expected Pattern:
+**Output:** ``results/metrics/dimensionality_Cora.json``
+
+**Expected Pattern:**
+```
 K        K/D     Random    Eigenspace    Improvement
 ────────────────────────────────────────────────────
 358      0.25    69.2%     75.2%         +6.0%
 716      0.50    71.8%     77.1%         +5.3%
 1433     1.00    73.5%     78.5%         +5.0%  ← Best
 2866     2.00    73.9%     78.9%         +5.0%
-Finding: K=D provides best accuracy-efficiency trade-off. Compression hurts slightly, expansion doesn't help much.
+```
+
+**Finding:** ``K=D`` provides best accuracy-efficiency trade-off. Compression hurts slightly, expansion doesn't help much.
 
 Experiment 4: Multi-Dataset (Should Do - Generalization)
 Purpose: Show method generalizes across datasets
