@@ -404,11 +404,13 @@ By weighting eigenvectors as **1/(λ+0.1)**, we:
 
 1. Give 10-12x more weight to smooth components (low λ)
 2. Reduce influence of noisy components (high λ)
-3. Effectively perform low-pass filtering on the graph
+3. Effectively perform **low-pass filtering** on the graph
 
-This is similar to what GNNs do implicitly through message passing!
+This is similar to what **GNNs do implicitly** through message passing!
 MLP Architecture
-pythonMLP(
+
+```
+MLP(
     input_dim=1433,      # Cora features
     hidden_dim=64,       # Single hidden layer
     output_dim=7,        # Number of classes
@@ -418,7 +420,8 @@ pythonMLP(
 
 Flow: Input (1433) → [Linear] → [ReLU] → [Dropout 0.8] 
       → [Linear] → [LogSoftmax] → Output (7)
-Why high dropout (0.8)?
+```
+**Why high dropout (0.8)?**
 
 Public split has only 640 training samples (train+val)
 High dropout prevents overfitting on small data
