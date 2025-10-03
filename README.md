@@ -381,7 +381,7 @@ python scripts/generate_plots.py
 Output: X_new ∈ ℝ^(N×D) ready for MLP
 ```
 
-**Intuition**
+### Intuition
 **Why Inverse Eigenvalue Weighting Works:**
 The eigenvalues of the projected Laplacian tell us about **graph smoothness:**
 
@@ -392,19 +392,19 @@ The eigenvalues of the projected Laplacian tell us about **graph smoothness:**
   - **We want to emphasize these!**
 
 
-High λ (1.5-1.8): Eigenvectors vary sharply on the graph
+- **High λ (1.5-1.8):** Eigenvectors vary **sharply** on the graph
 
-Neighboring nodes have different values
-Represents noise/high-frequency components
-Less useful for node classification
+  - Neighboring nodes have different values
+  - Represents noise/high-frequency components
+  - Less useful for node classification
 
 
 
-By weighting eigenvectors as 1/(λ+0.1), we:
+By weighting eigenvectors as **1/(λ+0.1)**, we:
 
-Give 10-12x more weight to smooth components (low λ)
-Reduce influence of noisy components (high λ)
-Effectively perform low-pass filtering on the graph
+1. Give 10-12x more weight to smooth components (low λ)
+2. Reduce influence of noisy components (high λ)
+3. Effectively perform low-pass filtering on the graph
 
 This is similar to what GNNs do implicitly through message passing!
 MLP Architecture
