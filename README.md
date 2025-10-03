@@ -454,29 +454,29 @@ Flow: Input (1433) → [Linear] → [ReLU] → [Dropout 0.8] → [Linear] → [L
 
 1. **Graph structure matters:** +14% improvement over random shows spectral information is valuable
 2. **Inverse weighting is crucial:** Other scaling strategies (match_std, sqrt_n) fail catastrophically
-Simple is powerful: A 2-layer MLP with proper features reaches 88% of GCN performance
-Homophily drives success: Method works best on high-homophily graphs (Cora: 81%)
-No dimensionality reduction: K=D is optimal, compression hurts performance
+3. **Simple is powerful:** A 2-layer MLP with proper features reaches 88% of GCN performance
+4. **Homophily drives success:** Method works best on high-homophily graphs (Cora: 81%)
+5. **No dimensionality reduction:** K=D is optimal, compression hurts performance
 
-Limitations
+#### Limitations
 
-Gap to GNN remains: Still ~10-12% below GNN performance
-One-time cost: Eigendecomposition takes ~2 seconds (but amortized over training)
-Homophily dependent: Works best when neighbors are similar (fails on heterophilous graphs)
-Public split specific: Results are for challenging public split (20 samples/class)
-Transductive only: Current implementation doesn't handle new nodes (inductive setting)
+1. Gap to GNN remains: Still ~10-12% below GNN performance
+2. One-time cost: Eigendecomposition takes ~2 seconds (but amortized over training)
+3. Homophily dependent: Works best when neighbors are similar (fails on heterophilous graphs)
+4. Public split specific: Results are for challenging public split (20 samples/class)
+5. Transductive only: Current implementation doesn't handle new nodes (inductive setting)
 
 
-🔮 Future Directions
+### 🔮 Future Directions
 
-Learnable weighting: Replace fixed 1/(λ+0.1) with learned weights
-Inductive setting: Extend to handle new nodes without recomputing eigenspace
-Heterophilous graphs: Develop strategies for graphs where neighbors are dissimilar
-Deeper MLPs: Test if 3+ layer MLPs can close the gap to GNNs
-Theoretical analysis: Prove when/why eigenspace transformation works
-Large-scale graphs: Test on OGB datasets (millions of nodes)
-Other tasks: Link prediction, graph classification, node regression
-Hybrid methods: Combine eigenspace features with GNN layers
+1. Learnable weighting: Replace fixed 1/(λ+0.1) with learned weights
+2. Inductive setting: Extend to handle new nodes without recomputing eigenspace
+3. Heterophilous graphs: Develop strategies for graphs where neighbors are dissimilar
+4. Deeper MLPs: Test if 3+ layer MLPs can close the gap to GNNs
+5. Theoretical analysis: Prove when/why eigenspace transformation works
+6. Large-scale graphs: Test on OGB datasets (millions of nodes)
+7. Other tasks: Link prediction, graph classification, node regression
+8. Hybrid methods: Combine eigenspace features with GNN layers
 ---
 
 ## 🎓 Citation
@@ -500,30 +500,32 @@ If you use this code in your research, please cite:
 ## 📚 References
 
 ### Graph Neural Networks
-- **GCN**: Kipf & Welling (2017). [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907)
-- **GAT**: Veličković et al. (2018). [Graph Attention Networks](https://arxiv.org/abs/1710.10903)
-- **GraphSAGE**: Hamilton et al. (2017). [Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216)
+- **GCN**: Kipf & Welling (2017). [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907)  
+- **GAT**: Veličković et al. (2018). [Graph Attention Networks](https://arxiv.org/abs/1710.10903)  
+- **GraphSAGE**: Hamilton et al. (2017). [Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216)  
 
 ### Spectral Methods
-- **Spectral Graph Theory**: Chung (1997). [Spectral Graph Theory](https://www.math.ucsd.edu/~fan/research/revised.html)
-- **Spectral Clustering**: Von Luxburg (2007). [A Tutorial on Spectral Clustering](https://arxiv.org/abs/0711.0189)
+- **Spectral Graph Theory**: Chung (1997). [Spectral Graph Theory](https://www.math.ucsd.edu/~fan/research/revised.html)  
+- **Spectral Graph Theory (Foundations)**: Spielman (2012). [Spectral Graph Theory and Its Applications](https://arxiv.org/abs/1201.0981)  
+- **Spectral Clustering**: Von Luxburg (2007). [A Tutorial on Spectral Clustering](https://arxiv.org/abs/0711.0189)  
 
 ### Random Projections
-- **Johnson-Lindenstrauss**: Classic dimensionality reduction lemma
-- **Database-friendly**: Achlioptas (2003). [Database-friendly random projections](https://dl.acm.org/doi/10.1145/773153.773188)
+- **Johnson–Lindenstrauss Lemma**: [Wikipedia Overview](https://en.wikipedia.org/wiki/Johnson%E2%80%93Lindenstrauss_lemma)  
+- **Database-friendly Random Projections**: Achlioptas (2003). [Database-friendly random projections](https://www.sciencedirect.com/science/article/pii/S0022000003000254)  
+
 
 ---
 ## 🤝 Contributing
 Contributions welcome! Areas of interest:
 
-New strategies: Alternative eigenvalue weighting schemes
-More baselines: PCA, Laplacian Eigenmaps, other spectral methods
-Datasets: Test on heterophilous graphs, OGB datasets
-Analysis: Theoretical understanding of why inverse weighting works
-Applications: Link prediction, graph classification
-Optimization: Faster eigendecomposition for large graphs
+- New strategies: Alternative eigenvalue weighting schemes
+- More baselines: PCA, Laplacian Eigenmaps, other spectral methods
+- Datasets: Test on heterophilous graphs, OGB datasets
+- Analysis: Theoretical understanding of why inverse weighting works
+- Applications: Link prediction, graph classification
+- Optimization: Faster eigendecomposition for large graphs
 
-To contribute:
+**To contribute:**
 
 1. Fork the repository
 2. Create a feature branch
