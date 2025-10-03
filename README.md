@@ -220,7 +220,7 @@ python experiments/compare_eigenspace_strategies.py --dataset Cora --epochs 300
 
 Tests 7 different scaling strategies for eigenspace transformation:
 
-1. inverse_eigenvalue - Weight by 1/(λ+0.1) ← WINNER
+1. ``inverse_eigenvalue`` - Weight by 1/(λ+0.1) ← WINNER
 2. direct_weighting - Apply inverse weights to features
 3. match_input_std - Scale to match input std
 4. sqrt_n - Scale by √N
