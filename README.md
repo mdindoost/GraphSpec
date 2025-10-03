@@ -418,19 +418,26 @@ MLP(
     layers=2             # Simple 2-layer architecture
 )
 
-Flow: Input (1433) → [Linear] → [ReLU] → [Dropout 0.8] 
-      → [Linear] → [LogSoftmax] → Output (7)
+Flow: Input (1433) → [Linear] → [ReLU] → [Dropout 0.8] → [Linear] → [LogSoftmax] → Output (7)
 ```
 **Why high dropout (0.8)?**
 
-Public split has only 640 training samples (train+val)
-High dropout prevents overfitting on small data
-Raw MLP with dropout=0.5 gets only 58%, dropout=0.8 gets 68%
+- Public split has only 640 training samples (train+val)
+- High dropout prevents overfitting on small data
+- Raw MLP with dropout=0.5 gets only 58%, dropout=0.8 gets 68%
 
 
-📊 Complete Results Summary
-Cora (Public Split, N=2708, E=10556, D=1433, C=7, train+val=640)
-MethodArchitectureAccuracyStdTrain TimeTest TimeRaw MLP2-layer (1433→64→7)68.24%0.51%1.60s0.02sRandom MLP2-layer61.07%0.78%1.51s0.02sEigenspace MLP2-layer75.53%1.04%1.93s0.02sGCN2-layer conv86.25%0.28%2.01s0.03s
+### 📊 Complete Results Summary
+**Cora (Public Split, N=2708, E=10556, D=1433, C=7, train+val=640)**
+```
+| **Method**     | **Architecture**    | **Accuracy**| **Std** | **Train Time** | **Test Time** |
+|----------------|---------------------|----------|-------|------------|-----------|
+| Raw MLP        | 2-layer (1433→64→7) | 68.24%   | 0.51% | 1.60s      | 0.02s     |
+| Random MLP     | 2-layer             | 61.07%   | 0.78% | 1.51s      | 0.02s     |
+| Eigenspace MLP | 2-layer             | 75.53%   | 1.04% | 1.93s      | 0.02s     |
+| GCN            | 2-layer conv        | 86.25%   | 0.28% | 2.01s      | 0.03s     |
+
+```
 Statistical Significance: t-test shows p < 0.001 for eigenspace vs random
 Key Metrics:
 
