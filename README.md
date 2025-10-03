@@ -431,11 +431,11 @@ Flow: Input (1433) → [Linear] → [ReLU] → [Dropout 0.8] → [Linear] → [L
 **Cora (Public Split, N=2708, E=10556, D=1433, C=7, train+val=640)**
 ```
 | **Method**     | **Architecture**    | **Accuracy**| **Std** | **Train Time** | **Test Time** |
-|----------------|---------------------|----------|-------|------------|-----------|
-| Raw MLP        | 2-layer (1433→64→7) | 68.24%   | 0.51% | 1.60s      | 0.02s     |
-| Random MLP     | 2-layer             | 61.07%   | 0.78% | 1.51s      | 0.02s     |
-| Eigenspace MLP | 2-layer             | 75.53%   | 1.04% | 1.93s      | 0.02s     |
-| GCN            | 2-layer conv        | 86.25%   | 0.28% | 2.01s      | 0.03s     |
+|----------------|---------------------|-------------|---------|----------------|---------------|
+| Raw MLP        | 2-layer (1433→64→7) | 68.24%      | 0.51%   | 1.60s          | 0.02s         |
+| Random MLP     | 2-layer             | 61.07%      | 0.78%   | 1.51s          | 0.02s         |
+| Eigenspace MLP | 2-layer             | 75.53%      | 1.04%   | 1.93s          | 0.02s         |
+| GCN            | 2-layer conv        | 86.25%      | 0.28%   | 2.01s          | 0.03s         |
 
 ```
 Statistical Significance: t-test shows p < 0.001 for eigenspace vs random
