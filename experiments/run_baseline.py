@@ -31,8 +31,8 @@ import json
 import time
 
 
-def run_baseline_experiment(dataset_name='Cora', hidden_dim=64, epochs=500, 
-                            num_runs=10, device='cpu'):
+def run_baseline_experiment(dataset_name='Cora', hidden_dim=64, epochs=500,
+                            num_runs=10, device='cpu', target_dim_ratio=1.0):
     """
     Run complete baseline comparison with optimal settings.
     
@@ -111,8 +111,17 @@ def run_baseline_experiment(dataset_name='Cora', hidden_dim=64, epochs=500,
         
         # 3. Eigenspace + MLP (WINNING STRATEGY!)
         print("\n[3/4] Training MLP with eigenspace projection...")
+
+        # Determine target dimension based on ratio
+        if target_dim_ratio < 1.0:
+            target_dim = int(data.num_features * target_dim_ratio)
+            print(f"   Using dimensionality reduction: {data.num_features} -> {target_dim} (ratio={target_dim_ratio})")
+        else:
+            target_dim = None
+            print(f"   Using full dimension: {data.num_features}")
+
         eigen_transform = EigenspaceTransformation(
-            target_dim=None, 
+            target_dim=target_dim,
             strategy='inverse_eigenvalue'  # WINNING STRATEGY
         )
         X_eigen = eigen_transform.fit_transform(X_normalized, L_norm)
@@ -250,12 +259,14 @@ def train_model(model, data, optimizer, train_mask, epochs=500, use_graph=False)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str, default='Cora', 
+    parser.add_argument('--dataset', type=str, default='Cora',
                        choices=['Cora', 'CiteSeer', 'PubMed'])
     parser.add_argument('--hidden_dim', type=int, default=64)
     parser.add_argument('--epochs', type=int, default=500)
     parser.add_argument('--runs', type=int, default=10)
     parser.add_argument('--device', type=str, default='cpu')
+    parser.add_argument('--target_dim_ratio', type=float, default=1.0,
+                       help='Target dimension as ratio of D (e.g., 0.25 for D//4, 1.0 for full D)')
     
     args = parser.parse_args()
     
@@ -264,5 +275,6 @@ if __name__ == "__main__":
         hidden_dim=args.hidden_dim,
         epochs=args.epochs,
         num_runs=args.runs,
-        device=args.device
+        device=args.device,
+        target_dim_ratio=args.target_dim_ratio
     )

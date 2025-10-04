@@ -123,8 +123,8 @@ def compare_strategies(dataset_name='Cora', hidden_dim=64, epochs=500, device='c
     print("BASELINE: Raw MLP (no transformation)")
     print("-"*70)
     
-    data_raw = data.clone()
-    data_raw.x = torch.FloatTensor(X_normalized)
+    data_raw = data.clone().to(device)
+    data_raw.x = torch.FloatTensor(X_normalized).to(device)
 
     # Create MLP with dropout=0.8
     model = MLP(
@@ -137,7 +137,7 @@ def compare_strategies(dataset_name='Cora', hidden_dim=64, epochs=500, device='c
     # Create optimizer with lr=0.01, weight_decay=1e-3
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-3)
 
-    result_raw = train_model(model, data_raw, optimizer, train_val_mask, epochs=epochs, use_graph=False)
+    result_raw = train_model(model, data_raw, optimizer, train_val_mask.to(device), epochs=epochs, use_graph=False)
     baseline_acc = result_raw['test_acc']
     
     print(f"Baseline Accuracy: {baseline_acc:.4f}")
@@ -157,8 +157,8 @@ def compare_strategies(dataset_name='Cora', hidden_dim=64, epochs=500, device='c
             X_transformed = transform.fit_transform(X_normalized, L_norm)
 
             # Train MLP
-            data_transformed = data.clone()
-            data_transformed.x = torch.FloatTensor(X_transformed)
+            data_transformed = data.clone().to(device)
+            data_transformed.x = torch.FloatTensor(X_transformed).to(device)
 
             # Create MLP with dropout=0.8
             model = MLP(
@@ -171,7 +171,7 @@ def compare_strategies(dataset_name='Cora', hidden_dim=64, epochs=500, device='c
             # Create optimizer with lr=0.01, weight_decay=1e-3
             optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-3)
 
-            result = train_model(model, data_transformed, optimizer, train_val_mask, epochs=epochs, use_graph=False)
+            result = train_model(model, data_transformed, optimizer, train_val_mask.to(device), epochs=epochs, use_graph=False)
 
             acc = result['test_acc']
             improvement = (acc - baseline_acc) * 100

@@ -138,8 +138,8 @@ def run_dimensionality_experiment(dataset_name='Cora', hidden_dim=64, epochs=200
             print(f"  [Random] K={target_dim}...")
             random_transform = RandomTransformation(target_dim=target_dim, seed=run)
             X_random = random_transform.fit_transform(X_normalized)
-            data_random = data.clone()
-            data_random.x = torch.FloatTensor(X_random)
+            data_random = data.clone().to(device)
+            data_random.x = torch.FloatTensor(X_random).to(device)
 
             # Create MLP with dropout=0.8
             model = MLP(
@@ -152,15 +152,15 @@ def run_dimensionality_experiment(dataset_name='Cora', hidden_dim=64, epochs=200
             # Create optimizer with lr=0.01, weight_decay=1e-3
             optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-3)
 
-            result_random = train_model(model, data_random, optimizer, train_val_mask, epochs=epochs, use_graph=False)
+            result_random = train_model(model, data_random, optimizer, train_val_mask.to(device), epochs=epochs, use_graph=False)
             results['random'][target_dim].append(result_random)
             
             # Eigenspace projection
             print(f"  [Eigenspace] K={target_dim}...")
             eigen_transform = EigenspaceTransformation(target_dim=target_dim, strategy='inverse_eigenvalue')
             X_eigen = eigen_transform.fit_transform(X_normalized, L_norm)
-            data_eigen = data.clone()
-            data_eigen.x = torch.FloatTensor(X_eigen)
+            data_eigen = data.clone().to(device)
+            data_eigen.x = torch.FloatTensor(X_eigen).to(device)
 
             # Create MLP with dropout=0.8
             model = MLP(
@@ -173,7 +173,7 @@ def run_dimensionality_experiment(dataset_name='Cora', hidden_dim=64, epochs=200
             # Create optimizer with lr=0.01, weight_decay=1e-3
             optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-3)
 
-            result_eigen = train_model(model, data_eigen, optimizer, train_val_mask, epochs=epochs, use_graph=False)
+            result_eigen = train_model(model, data_eigen, optimizer, train_val_mask.to(device), epochs=epochs, use_graph=False)
             results['eigenspace'][target_dim].append(result_eigen)
     
     # Print summary

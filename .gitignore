@@ -45,6 +45,7 @@ data/processed/*
 # Results
 results/logs/*
 results/checkpoints/*
+results/plots/
 !results/logs/.gitkeep
 !results/checkpoints/.gitkeep
 *.log
@@ -61,3 +62,6 @@ temp/
 
 # Tensorboard
 runs/
+
+# Documentation
+docs/

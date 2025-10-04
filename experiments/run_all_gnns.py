@@ -124,8 +124,8 @@ def run_gnn_comparison(dataset_name='Cora', hidden_dim=64, epochs=200,
         print("\n[1/4] Eigenspace + MLP...")
         eigen_transform = EigenspaceTransformation(target_dim=None, strategy='inverse_eigenvalue')
         X_eigen = eigen_transform.fit_transform(X_normalized, L_norm)
-        data_eigen = data.clone()
-        data_eigen.x = torch.FloatTensor(X_eigen)
+        data_eigen = data.clone().to(device)
+        data_eigen.x = torch.FloatTensor(X_eigen).to(device)
 
         # Create MLP with dropout=0.8
         model = MLP(
@@ -138,7 +138,7 @@ def run_gnn_comparison(dataset_name='Cora', hidden_dim=64, epochs=200,
         # Create optimizer with lr=0.01, weight_decay=1e-3
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-3)
 
-        result = train_model(model, data_eigen, optimizer, train_val_mask, epochs=epochs, use_graph=False)
+        result = train_model(model, data_eigen, optimizer, train_val_mask.to(device), epochs=epochs, use_graph=False)
         results['eigenspace_mlp'].append(result)
         
         # GNN models
@@ -175,7 +175,7 @@ def run_gnn_comparison(dataset_name='Cora', hidden_dim=64, epochs=200,
             # Create optimizer with lr=0.01, weight_decay=1e-3
             optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-3)
 
-            result = train_model(model, data_gnn, optimizer, train_val_mask, epochs=epochs, use_graph=True)
+            result = train_model(model, data_gnn, optimizer, train_val_mask.to(device), epochs=epochs, use_graph=True)
             results[gnn_type].append(result)
     
     # Summary
