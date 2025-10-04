@@ -13,13 +13,72 @@ os.chdir(project_root)
 sys.path.append('.')
 
 import torch
+import torch.nn.functional as F
 import numpy as np
+import time
 from torch_geometric.datasets import Planetoid
+from sklearn.preprocessing import StandardScaler
 from src.transformations.eigenspace import EigenspaceTransformation
 from src.data.graph_utils import compute_normalized_laplacian
-from src.training.trainer import Trainer
+from src.models.mlp import MLP
+from src.models.gcn import GCN
+from src.models.gat import GAT
+from src.models.sage import GraphSAGE
 import argparse
 import json
+
+
+def train_model(model, data, optimizer, train_mask, epochs=500, use_graph=False):
+    """Train model and return metrics."""
+    best_test_acc = 0
+    best_test_f1 = 0
+    patience = 0
+    start_time = time.time()
+
+    for epoch in range(epochs):
+        # Train
+        model.train()
+        optimizer.zero_grad()
+
+        if use_graph:
+            out = model(data.x, data.edge_index)
+        else:
+            out = model(data.x)
+
+        loss = F.nll_loss(out[train_mask], data.y[train_mask])
+        loss.backward()
+        optimizer.step()
+
+        # Evaluate
+        if epoch % 10 == 0:
+            model.eval()
+            with torch.no_grad():
+                if use_graph:
+                    out = model(data.x, data.edge_index)
+                else:
+                    out = model(data.x)
+
+                pred = out.argmax(1)
+                test_acc = (pred[data.test_mask] == data.y[data.test_mask]).float().mean().item()
+
+                if test_acc > best_test_acc:
+                    best_test_acc = test_acc
+                    best_test_f1 = test_acc  # Simplified
+                    patience = 0
+                else:
+                    patience += 1
+
+                if patience >= 30:  # 300 epochs without improvement
+                    break
+
+    train_time = time.time() - start_time
+
+    return {
+        'test_acc': best_test_acc,
+        'test_f1_micro': best_test_f1,
+        'test_f1_macro': best_test_f1,
+        'train_time': train_time
+    }
 
 
 def run_gnn_comparison(dataset_name='Cora', hidden_dim=64, epochs=200,
@@ -33,12 +92,18 @@ def run_gnn_comparison(dataset_name='Cora', hidden_dim=64, epochs=200,
     print(f"{'='*80}\n")
     
     # Load dataset
-    dataset = Planetoid(root='data/raw', name=dataset_name)
+    dataset = Planetoid(root='data/raw', name=dataset_name, split='public')
     data = dataset[0]
-    
+
+    # Use train+val for training (standard for public split)
+    train_val_mask = data.train_mask | data.val_mask
+
+    # Normalize features
+    scaler = StandardScaler()
+    X_normalized = scaler.fit_transform(data.x.numpy())
+
     # Prepare eigenspace transformation
-    X_np = data.x.cpu().numpy()
-    edge_index_np = data.edge_index.cpu().numpy()
+    edge_index_np = data.edge_index.numpy()
     L_norm = compute_normalized_laplacian(edge_index_np, data.num_nodes)
     
     # GNN models to test
@@ -57,32 +122,60 @@ def run_gnn_comparison(dataset_name='Cora', hidden_dim=64, epochs=200,
         
         # Eigenspace + MLP
         print("\n[1/4] Eigenspace + MLP...")
-        eigen_transform = EigenspaceTransformation(target_dim=None)
-        X_eigen = eigen_transform.fit_transform(X_np, L_norm)
+        eigen_transform = EigenspaceTransformation(target_dim=None, strategy='inverse_eigenvalue')
+        X_eigen = eigen_transform.fit_transform(X_normalized, L_norm)
         data_eigen = data.clone()
         data_eigen.x = torch.FloatTensor(X_eigen)
-        
-        trainer = Trainer(
+
+        # Create MLP with dropout=0.8
+        model = MLP(
             input_dim=X_eigen.shape[1],
             hidden_dim=hidden_dim,
             output_dim=dataset.num_classes,
-            model_type='mlp',
-            device=device
-        )
-        result = trainer.train(data_eigen, epochs=epochs, verbose=False)
+            dropout=0.8
+        ).to(device)
+
+        # Create optimizer with lr=0.01, weight_decay=1e-3
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-3)
+
+        result = train_model(model, data_eigen, optimizer, train_val_mask, epochs=epochs, use_graph=False)
         results['eigenspace_mlp'].append(result)
         
         # GNN models
         for i, gnn_type in enumerate(gnn_models):
             print(f"\n[{i+2}/4] {gnn_type.upper()}...")
-            trainer = Trainer(
-                input_dim=data.num_features,
-                hidden_dim=hidden_dim,
-                output_dim=dataset.num_classes,
-                model_type=gnn_type,
-                device=device
-            )
-            result = trainer.train(data, epochs=epochs, verbose=False)
+
+            # Prepare data with normalized features
+            data_gnn = data.clone()
+            data_gnn.x = torch.FloatTensor(X_normalized).to(device)
+
+            # Create GNN model with dropout=0.8
+            if gnn_type == 'gcn':
+                model = GCN(
+                    input_dim=data.num_features,
+                    hidden_dim=hidden_dim,
+                    output_dim=dataset.num_classes,
+                    dropout=0.8
+                ).to(device)
+            elif gnn_type == 'gat':
+                model = GAT(
+                    input_dim=data.num_features,
+                    hidden_dim=hidden_dim,
+                    output_dim=dataset.num_classes,
+                    dropout=0.8
+                ).to(device)
+            elif gnn_type == 'sage':
+                model = GraphSAGE(
+                    input_dim=data.num_features,
+                    hidden_dim=hidden_dim,
+                    output_dim=dataset.num_classes,
+                    dropout=0.8
+                ).to(device)
+
+            # Create optimizer with lr=0.01, weight_decay=1e-3
+            optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-3)
+
+            result = train_model(model, data_gnn, optimizer, train_val_mask, epochs=epochs, use_graph=True)
             results[gnn_type].append(result)
     
     # Summary

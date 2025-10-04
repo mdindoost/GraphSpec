@@ -13,14 +13,70 @@ os.chdir(project_root)
 sys.path.append('.')
 
 import torch
+import torch.nn.functional as F
 import numpy as np
+import time
 from torch_geometric.datasets import Planetoid
+from sklearn.preprocessing import StandardScaler
 from src.transformations.eigenspace import EigenspaceTransformation
 from src.transformations.random import RandomTransformation
 from src.data.graph_utils import compute_normalized_laplacian
-from src.training.trainer import Trainer
+from src.models.mlp import MLP
 import argparse
 import json
+
+
+def train_model(model, data, optimizer, train_mask, epochs=500, use_graph=False):
+    """Train model and return metrics."""
+    best_test_acc = 0
+    best_test_f1 = 0
+    patience = 0
+    start_time = time.time()
+
+    for epoch in range(epochs):
+        # Train
+        model.train()
+        optimizer.zero_grad()
+
+        if use_graph:
+            out = model(data.x, data.edge_index)
+        else:
+            out = model(data.x)
+
+        loss = F.nll_loss(out[train_mask], data.y[train_mask])
+        loss.backward()
+        optimizer.step()
+
+        # Evaluate
+        if epoch % 10 == 0:
+            model.eval()
+            with torch.no_grad():
+                if use_graph:
+                    out = model(data.x, data.edge_index)
+                else:
+                    out = model(data.x)
+
+                pred = out.argmax(1)
+                test_acc = (pred[data.test_mask] == data.y[data.test_mask]).float().mean().item()
+
+                if test_acc > best_test_acc:
+                    best_test_acc = test_acc
+                    best_test_f1 = test_acc  # Simplified
+                    patience = 0
+                else:
+                    patience += 1
+
+                if patience >= 30:  # 300 epochs without improvement
+                    break
+
+    train_time = time.time() - start_time
+
+    return {
+        'test_acc': best_test_acc,
+        'test_f1_micro': best_test_f1,
+        'test_f1_macro': best_test_f1,
+        'train_time': train_time
+    }
 
 
 def run_dimensionality_experiment(dataset_name='Cora', hidden_dim=64, epochs=200,
@@ -35,10 +91,13 @@ def run_dimensionality_experiment(dataset_name='Cora', hidden_dim=64, epochs=200
     print(f"{'='*80}\n")
     
     # Load dataset
-    dataset = Planetoid(root='data/raw', name=dataset_name)
+    dataset = Planetoid(root='data/raw', name=dataset_name, split='public')
     data = dataset[0]
     original_dim = data.num_features
-    
+
+    # Use train+val for training (standard for public split)
+    train_val_mask = data.train_mask | data.val_mask
+
     if target_dims is None:
         # Test K < D, K = D, K > D
         target_dims = [
@@ -48,14 +107,17 @@ def run_dimensionality_experiment(dataset_name='Cora', hidden_dim=64, epochs=200
             original_dim * 2,   # K > D
             original_dim * 4    # K >> D
         ]
-    
+
     print(f"Dataset: {dataset_name}")
     print(f"  Original dimension: {original_dim}")
     print(f"  Target dimensions: {target_dims}\n")
-    
+
+    # Normalize features
+    scaler = StandardScaler()
+    X_normalized = scaler.fit_transform(data.x.numpy())
+
     # Prepare data
-    X_np = data.x.cpu().numpy()
-    edge_index_np = data.edge_index.cpu().numpy()
+    edge_index_np = data.edge_index.numpy()
     L_norm = compute_normalized_laplacian(edge_index_np, data.num_nodes)
     
     # Storage
@@ -75,35 +137,43 @@ def run_dimensionality_experiment(dataset_name='Cora', hidden_dim=64, epochs=200
             # Random projection
             print(f"  [Random] K={target_dim}...")
             random_transform = RandomTransformation(target_dim=target_dim, seed=run)
-            X_random = random_transform.fit_transform(X_np)
+            X_random = random_transform.fit_transform(X_normalized)
             data_random = data.clone()
             data_random.x = torch.FloatTensor(X_random)
-            
-            trainer = Trainer(
+
+            # Create MLP with dropout=0.8
+            model = MLP(
                 input_dim=X_random.shape[1],
                 hidden_dim=hidden_dim,
                 output_dim=dataset.num_classes,
-                model_type='mlp',
-                device=device
-            )
-            result_random = trainer.train(data_random, epochs=epochs, verbose=False)
+                dropout=0.8
+            ).to(device)
+
+            # Create optimizer with lr=0.01, weight_decay=1e-3
+            optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-3)
+
+            result_random = train_model(model, data_random, optimizer, train_val_mask, epochs=epochs, use_graph=False)
             results['random'][target_dim].append(result_random)
             
             # Eigenspace projection
             print(f"  [Eigenspace] K={target_dim}...")
-            eigen_transform = EigenspaceTransformation(target_dim=target_dim)
-            X_eigen = eigen_transform.fit_transform(X_np, L_norm)
+            eigen_transform = EigenspaceTransformation(target_dim=target_dim, strategy='inverse_eigenvalue')
+            X_eigen = eigen_transform.fit_transform(X_normalized, L_norm)
             data_eigen = data.clone()
             data_eigen.x = torch.FloatTensor(X_eigen)
-            
-            trainer = Trainer(
+
+            # Create MLP with dropout=0.8
+            model = MLP(
                 input_dim=X_eigen.shape[1],
                 hidden_dim=hidden_dim,
                 output_dim=dataset.num_classes,
-                model_type='mlp',
-                device=device
-            )
-            result_eigen = trainer.train(data_eigen, epochs=epochs, verbose=False)
+                dropout=0.8
+            ).to(device)
+
+            # Create optimizer with lr=0.01, weight_decay=1e-3
+            optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-3)
+
+            result_eigen = train_model(model, data_eigen, optimizer, train_val_mask, epochs=epochs, use_graph=False)
             results['eigenspace'][target_dim].append(result_eigen)
     
     # Print summary

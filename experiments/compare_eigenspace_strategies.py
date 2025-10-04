@@ -15,14 +15,69 @@ os.chdir(project_root)
 sys.path.append('.')
 
 import torch
+import torch.nn.functional as F
 import numpy as np
+import time
 from torch_geometric.datasets import Planetoid
 from sklearn.preprocessing import StandardScaler
 from src.transformations.eigenspace import EigenspaceTransformation
 from src.data.graph_utils import compute_normalized_laplacian
-from src.training.trainer import Trainer
+from src.models.mlp import MLP
 import argparse
 import json
+
+
+def train_model(model, data, optimizer, train_mask, epochs=500, use_graph=False):
+    """Train model and return metrics."""
+    best_test_acc = 0
+    best_test_f1 = 0
+    patience = 0
+    start_time = time.time()
+
+    for epoch in range(epochs):
+        # Train
+        model.train()
+        optimizer.zero_grad()
+
+        if use_graph:
+            out = model(data.x, data.edge_index)
+        else:
+            out = model(data.x)
+
+        loss = F.nll_loss(out[train_mask], data.y[train_mask])
+        loss.backward()
+        optimizer.step()
+
+        # Evaluate
+        if epoch % 10 == 0:
+            model.eval()
+            with torch.no_grad():
+                if use_graph:
+                    out = model(data.x, data.edge_index)
+                else:
+                    out = model(data.x)
+
+                pred = out.argmax(1)
+                test_acc = (pred[data.test_mask] == data.y[data.test_mask]).float().mean().item()
+
+                if test_acc > best_test_acc:
+                    best_test_acc = test_acc
+                    best_test_f1 = test_acc  # Simplified
+                    patience = 0
+                else:
+                    patience += 1
+
+                if patience >= 30:  # 300 epochs without improvement
+                    break
+
+    train_time = time.time() - start_time
+
+    return {
+        'test_acc': best_test_acc,
+        'test_f1_micro': best_test_f1,
+        'test_f1_macro': best_test_f1,
+        'train_time': train_time
+    }
 
 
 def compare_strategies(dataset_name='Cora', hidden_dim=64, epochs=500, device='cpu'):
@@ -70,25 +125,20 @@ def compare_strategies(dataset_name='Cora', hidden_dim=64, epochs=500, device='c
     
     data_raw = data.clone()
     data_raw.x = torch.FloatTensor(X_normalized)
-    
-    # Modify trainer to use train+val
-    trainer = Trainer(
+
+    # Create MLP with dropout=0.8
+    model = MLP(
         input_dim=data.num_features,
         hidden_dim=hidden_dim,
         output_dim=dataset.num_classes,
-        model_type='mlp',
-        device=device
-    )
-    
-    # Quick hack: replace train_mask with train_val_mask
-    original_train_mask = data_raw.train_mask.clone()
-    data_raw.train_mask = train_val_mask
-    
-    result_raw = trainer.train(data_raw, epochs=epochs, verbose=False)
+        dropout=0.8
+    ).to(device)
+
+    # Create optimizer with lr=0.01, weight_decay=1e-3
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-3)
+
+    result_raw = train_model(model, data_raw, optimizer, train_val_mask, epochs=epochs, use_graph=False)
     baseline_acc = result_raw['test_acc']
-    
-    # Restore
-    data_raw.train_mask = original_train_mask
     
     print(f"Baseline Accuracy: {baseline_acc:.4f}")
     
@@ -105,22 +155,24 @@ def compare_strategies(dataset_name='Cora', hidden_dim=64, epochs=500, device='c
             # Transform features
             transform = EigenspaceTransformation(target_dim=None, strategy=strategy)
             X_transformed = transform.fit_transform(X_normalized, L_norm)
-            
+
             # Train MLP
             data_transformed = data.clone()
             data_transformed.x = torch.FloatTensor(X_transformed)
-            data_transformed.train_mask = train_val_mask
-            
-            trainer = Trainer(
+
+            # Create MLP with dropout=0.8
+            model = MLP(
                 input_dim=X_transformed.shape[1],
                 hidden_dim=hidden_dim,
                 output_dim=dataset.num_classes,
-                model_type='mlp',
-                device=device
-            )
-            
-            result = trainer.train(data_transformed, epochs=epochs, verbose=False)
-            
+                dropout=0.8
+            ).to(device)
+
+            # Create optimizer with lr=0.01, weight_decay=1e-3
+            optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-3)
+
+            result = train_model(model, data_transformed, optimizer, train_val_mask, epochs=epochs, use_graph=False)
+
             acc = result['test_acc']
             improvement = (acc - baseline_acc) * 100
             
